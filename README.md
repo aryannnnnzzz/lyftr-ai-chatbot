@@ -216,8 +216,8 @@ curl -s -i -X POST $B/chat -H 'Content-Type: application/json' -d '{"session_id"
 
 ## 5. Setup Used
 
-- Editor: Claude desktop app (Claude Code tab) with the built-in terminal and browser pane
-- AI tools: Claude Code (Claude Opus) for scaffolding, implementation, tests and docs; all code reviewed and run locally.
+- Editor: Claude desktop app with integrated terminal
+- AI tools: Claude Code as a coding assistant
 
 ## 6. Bonus features
 
