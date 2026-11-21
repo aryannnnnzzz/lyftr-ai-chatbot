@@ -1,0 +1,26 @@
+services:
+  backend:
+    build: ./backend
+    env_file: .env
+    environment:
+      DATABASE_URL: sqlite:////data/app.db
+      PORT: "8000"
+    ports:
+      - "8000:8000"
+    volumes:
+      - appdata:/data
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    environment:
+      # The browser calls the backend directly, so this is the host-visible URL.
+      API_BASE_URL: ${FRONTEND_API_BASE_URL:-http://localhost:8000}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  appdata:

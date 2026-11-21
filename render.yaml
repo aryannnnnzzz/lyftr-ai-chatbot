@@ -1,0 +1,19 @@
+# Render blueprint for the backend (Dashboard -> New -> Blueprint -> pick this repo).
+services:
+  - type: web
+    name: lyftr-chat-backend
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: LLM_API_KEYS
+        sync: false
+      - key: LLM_MODEL
+        value: gemini/gemini-flash-latest
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: ENABLE_FAILURE_SIMULATION
+        value: "true"
+      - key: DATABASE_URL
+        value: sqlite:////data/app.db
