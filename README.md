@@ -104,7 +104,9 @@ npm run dev                                        # http://localhost:3000 → h
 ### Caching
 
 - LiteLLM's built-in cache (`litellm.caching.Cache(type="local")`, in-memory with a TTL). This
-  LiteLLM version no longer ships the disk cache.
+  LiteLLM version no longer ships the disk cache. Because the cache lives in the process,
+  the backend runs a single uvicorn worker. A multi-worker or multi-instance deployment would
+  need a shared cache (e.g. LiteLLM's Redis cache), which the assignment rules out.
 - The cache key is LiteLLM's own `get_cache_key()` over `model` + the full `messages` list
   (system prompt + history + new message). `api_key` is **not** part of it, so a reply cached via
   `key_1` is still served when `key_1` is down.
@@ -182,6 +184,18 @@ curl -s -i -X POST $B/chat -H 'Content-Type: application/json' -d '{"session_id"
   the 503 path can be shown without curl.
 - Reloading the page or clicking *New chat* starts a new session. Sending the same first message
   again then shows `LLM_CACHE`.
+- `output_tokens` is the provider's completion count. The deployed model (`gpt-oss-20b`) is a
+  reasoning model, so its hidden reasoning tokens are included, and a one-word reply can still
+  report about 60–90 output tokens.
+
+**Results from the deployed backend:**
+
+| Request | Outcome |
+|---|---|
+| First message | `LIVE_INFERENCE`, `key_1`, about 360 ms |
+| Same message, new session | `LLM_CACHE`, identical reply, `key_id: null`, about 1 ms |
+| `key_1=429` / `key_1=500` | 200 from `key_2`, `fallback_attempts: 1`, earlier turns still remembered |
+| `*=429` | 503 `all providers unavailable`, not stored |
 
 **Automated tests:** `cd backend && pytest -q` runs 22 tests with the provider mocked at
 `litellm.acompletion`. They cover:
@@ -199,7 +213,7 @@ curl -s -i -X POST $B/chat -H 'Content-Type: application/json' -d '{"session_id"
 
 ## 5. Setup Used
 
-- Editor: Claude desktop app (Claude Code tab) with the built-in terminal
+- Editor: Claude desktop app (Claude Code tab) with the built-in terminal and browser pane
 - AI tools: Claude Code (Claude Opus) for scaffolding, implementation, tests and docs; all code reviewed and run locally.
 
 ## 6. Bonus features
@@ -214,8 +228,19 @@ curl -s -i -X POST $B/chat -H 'Content-Type: application/json' -d '{"session_id"
 - **Runtime frontend config:** the nginx image writes `config.js` from `API_BASE_URL` at start-up,
   so one image works for any backend URL without a rebuild.
 - **Health check that tells the truth:** `/health` returns 503 with a reason when the database is
-  unreachable or no keys are configured. Both Dockerfiles use small multi-stage images, and the
-  backend runs as a non-root user with a Docker `HEALTHCHECK`.
+  unreachable or no keys are configured. The backend runs as a non-root user with a Docker
+  `HEALTHCHECK`.
+- **Lean multi-stage images:**
+  - Frontend: **74 MB** (Node build stage, then nginx-alpine).
+  - Backend: **527 MB**, down from 704 MB untrimmed. Most of what remains is LiteLLM itself. The
+    builder strips LiteLLM's proxy dashboard assets, bytecode caches and pip, then runs an import
+    check, so a bad trim fails the build instead of shipping a broken image.
+- **CI on every push** ([GitHub Actions](https://github.com/aryannnnnzzz/lyftr-ai-chatbot/actions)):
+  runs the backend tests, then runs `make up` on a clean runner and checks:
+  - health and a clean 503 JSON when every key fails
+  - that a failed request isn't stored, and that bad input gets a 422
+  - that the frontend is served on `:3000` with its runtime config
+  - that `/data/app.db` lives on the named volume and survives a container restart
 
 ## Deployment notes
 
