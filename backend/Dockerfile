@@ -7,6 +7,13 @@ ENV PATH="/opt/venv/bin:$PATH"
 
 COPY requirements.txt .
 RUN pip install -r requirements.txt
+# Trim what the runtime never uses: LiteLLM's proxy dashboard assets, bytecode caches
+# and the packaging tools. Then fail the build if anything the app imports broke.
+RUN rm -rf /opt/venv/lib/python3.12/site-packages/litellm/proxy/_experimental/out \
+    && find /opt/venv -type d -name __pycache__ -prune -exec rm -rf {} + \
+    && (pip uninstall -y pip setuptools wheel >/dev/null 2>&1; true) \
+    && python -c "import litellm, fastapi, uvicorn; from litellm.caching.caching import Cache; Cache(type='local')" \
+    && find /opt/venv -type d -name __pycache__ -prune -exec rm -rf {} +
 
 # ---- runtime stage: slim image with only the venv and app code ----
 FROM python:3.12-slim AS runtime
