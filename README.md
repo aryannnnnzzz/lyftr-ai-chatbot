@@ -148,7 +148,10 @@ npm run dev                                        # http://localhost:3000 → h
 
 ## 4. Verification
 
-Set `B=http://localhost:8000` (or the live backend URL).
+**One command:** `bash scripts/demo.sh [BASE_URL]` runs every step below with labels. It
+defaults to the deployed backend; pass `http://localhost:8000` to target the local stack.
+
+To run the steps by hand, set `B=http://localhost:8000` (or the live backend URL).
 
 ```bash
 curl $B/health

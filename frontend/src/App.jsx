@@ -88,7 +88,15 @@ export default function App() {
           <div>
             <h1>Lyftr Chat</h1>
             <p className="sub">
-              Session <code>{sessionId.slice(0, 14)}…</code>
+              Session <code title={sessionId}>{sessionId.slice(0, 14)}…</code>
+              {" · "}
+              <a
+                href={`${API_BASE_URL}/sessions/${encodeURIComponent(sessionId)}/messages`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                View history (JSON)
+              </a>
             </p>
           </div>
         </div>
