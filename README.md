@@ -63,7 +63,7 @@ npm run dev                                        # http://localhost:3000 → h
 | Variable | Meaning |
 |---|---|
 | `LLM_API_KEYS` | Comma-separated key pool (≥ 2). Ids are `key_1`, `key_2`, … in this order |
-| `LLM_MODEL` | LiteLLM model for every key (default `gemini/gemini-flash-latest`) |
+| `LLM_MODEL` | LiteLLM model for every key. The deployment uses `groq/openai/gpt-oss-20b`; any LiteLLM model works, e.g. `gemini/gemini-flash-latest` (the code default) |
 | `LLM_KEY_MODELS` | Optional per-key models aligned with `LLM_API_KEYS` (e.g. mix Gemini + Groq) |
 | `DATABASE_URL` | SQLite location, e.g. `sqlite:////data/app.db` |
 | `ALLOWED_ORIGINS` | Comma-separated CORS origins |
