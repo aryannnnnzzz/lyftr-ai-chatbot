@@ -17,9 +17,14 @@ browser ──► frontend (React, nginx :3000)
 
 | Tier | URL |
 |---|---|
-| Frontend | `TODO: https://<your-app>.vercel.app` |
-| Backend | `TODO: https://<your-backend>.onrender.com` (try `/health`) |
-| Repository | `TODO: https://github.com/<you>/<repo>` |
+| Frontend (Vercel) | https://lyftr-ai-chatbot-theta.vercel.app |
+| Backend (Render) | https://lyftr-chat-backend-72k0.onrender.com ([`/health`](https://lyftr-chat-backend-72k0.onrender.com/health)) |
+| Repository | https://github.com/aryannnnnzzz/lyftr-ai-chatbot |
+
+The backend runs on Render's free plan, which spins down when idle. The first request after a
+pause can take about 50 seconds while it wakes up; later requests are fast. The free plan also
+has no persistent disk, so the deployed SQLite history resets on redeploy. Locally,
+`docker-compose` keeps it on the `appdata` volume.
 
 ## 2. Run locally
 
@@ -194,7 +199,7 @@ curl -s -i -X POST $B/chat -H 'Content-Type: application/json' -d '{"session_id"
 
 ## 5. Setup Used
 
-- Editor: `TODO`
+- Editor: Claude desktop app (Claude Code tab) with the built-in terminal
 - AI tools: Claude Code (Claude Opus) for scaffolding, implementation, tests and docs; all code reviewed and run locally.
 
 ## 6. Bonus features
